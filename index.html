@@ -1,0 +1,481 @@
+<html><head><base href="">
+  <meta charset="UTF-8">
+  <title>Fiilmee Announcement Panel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #2c2f33;
+      color: #ffffff;
+      margin: 0;
+      padding: 20px;
+      position: relative;
+    }
+    /* Removed topbar styles */
+
+    /* Info Button Styles */
+    .info-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+      transition: transform 0.3s ease;
+    }
+    .info-btn:hover {
+      transform: scale(1.2);
+    }
+    .info-btn svg {
+      width: 24px;
+      height: 24px;
+      fill: #ffffff;
+    }
+
+    h1 {
+      text-align: center;
+      color: #b400ff;
+      margin-top: 60px; /* Space for the fixed info button */
+      margin-bottom: 20px;
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .form-container, .preview-container {
+      flex: 1 1 400px;
+      background-color: #23272a;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #99aab5;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      background-color: #2c2f33;
+      color: #ffffff;
+    }
+    button {
+      padding: 10px 15px;
+      background-color: #7289da;
+      color: #ffffff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #5b6eae;
+    }
+    .fields {
+      margin-bottom: 15px;
+    }
+    .field {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+    .field input {
+      flex: 1;
+    }
+    .preview {
+      background-color: #2c2f33;
+      border-left: 4px solid #b400ff;
+      padding: 15px;
+      border-radius: 4px;
+      animation: fadeIn 1s ease-in-out;
+    }
+    .author {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .author img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+    .title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .description {
+      margin: 10px 0;
+    }
+    .field-item {
+      margin-bottom: 10px;
+    }
+    .field-name {
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #99aab5;
+    }
+    .timestamp {
+      margin-left: 5px;
+      color: #99aab5;
+    }
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* SVG Icon */
+    .add-field-icon {
+      width: 20px;
+      height: 20px;
+      fill: #ffffff;
+      transition: transform 0.3s ease;
+    }
+    .add-field:hover .add-field-icon {
+      transform: scale(1.2);
+    }
+    .delete-field-btn {
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      fill: #e74c3c;
+      width: 20px;
+      height: 20px;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .delete-field-btn:hover {
+      transform: scale(1.2);
+    }
+    .delete-field-btn .delete-x {
+      position: absolute;
+      top: 2px;
+      left: 6px;
+      color: #e74c3c;
+      font-weight: bold;
+      pointer-events: none;
+      font-size: 12px;
+    }
+    /* Notification Styles */
+    .notification {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 4px;
+      display: none;
+    }
+    .notification.success {
+      background-color: #2ecc71;
+      color: #ffffff;
+    }
+    .notification.error {
+      background-color: #e74c3c;
+      color: #ffffff;
+    }
+    /* Popup Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal {
+      background-color: #23272a;
+      padding: 20px;
+      border-radius: 8px;
+      width: 300px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease-in-out;
+      color: #ffffff;
+    }
+    .modal h2 {
+      margin-top: 0;
+      color: #ffffff;
+      text-align: center;
+    }
+    .modal-content {
+      margin-bottom: 15px;
+      white-space: pre-wrap;
+    }
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .modal-buttons button {
+      flex: none;
+    }
+  </style>
+</head>
+<body>
+  <button class="info-btn" id="info-btn" aria-label="Information">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <path d="M256 48C141.1 48 48 141.1 48 256s93.1 208 208 208 208-93.1 208-208S370.9 48 256 48zm0 368c-17.7 0-32-14.3-32-32s14.3-32 32-32 32 14.3 32 32-14.3 32-32 32zm56-104c-6.5-7.3-14.6-13.1-23.5-17.3-8.9-4.2-18.6-6.3-28.5-6.3s-19.6 2.1-28.5 6.3c-8.9 4.2-17 10-23.5 17.3-6.5 7.3-11 16-13.3 25.3-2.3 9.3-3 19.1-2.3 28.8.7 9.7 3.6 18.7 8.4 26.3 4.8 7.6 11.6 13.5 19.5 17.3 7.9 3.8 16.6 5.7 25.9 5.7s18-1.9 25.9-5.7c7.9-3.8 14.7-9.7 19.5-17.3 4.8-7.6 7.7-16.6 8.4-26.3.7-9.7-.1-19.5-2.3-28.8-2.3-9.3-6.8-18-13.3-25.3z"/>
+    </svg>
+  </button>
+  <h1>Fiilmee Announcement Panel</h1>
+  <div class="container">
+    <div class="form-container">
+      <!-- Removed Webhook URL field -->
+      <div class="form-group">
+        <label for="title">Title *</label>
+        <input type="text" id="title" placeholder="Enter title" required>
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" rows="3" placeholder="Enter description (optional)"></textarea>
+      </div>
+      <div class="form-group fields">
+        <label>Fields (Up to 7)</label>
+        <div id="fields-container"></div>
+        <button type="button" id="add-field-btn">
+          <svg class="add-field-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+            <path d="M432 256c0 13.3-10.7 24-24 24H272v144c0 13.3-10.7 24-24 24s-24-10.7-24-24V280H24c-13.3 0-24-10.7-24-24s10.7-24 24-24h224V88c0-13.3 10.7-24 24-24s24 10.7 24 24v144h136c13.3 0 24 10.7 24 24z"/>
+          </svg>
+          Add Field
+        </button>
+      </div>
+      <div class="form-group">
+        <label for="footer">Footer Text</label>
+        <input type="text" id="footer" placeholder="Enter footer text (optional)">
+      </div>
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="timestamp"> Add Timestamp
+        </label>
+      </div>
+      <button type="button" id="send-announcement-btn">Send Announcement</button>
+      <div class="notification success" id="success-notification">
+        Announcement sent successfully!
+      </div>
+      <div class="notification error" id="error-notification">
+        Failed to send announcement. Please check the webhook URL and try again.
+      </div>
+    </div>
+    <div class="preview-container">
+      <div class="preview" id="preview">
+        <div class="author">
+          <img src="https://cdn-icons-png.flaticon.com/512/10464/10464718.png" alt="Author Icon">
+          <div class="title">Announcement</div>
+        </div>
+        <div class="title" id="preview-title">Title</div>
+        <div class="description" id="preview-description">Description</div>
+        <div id="preview-fields"></div>
+        <div class="footer" id="preview-footer">
+          Footer Text <span class="timestamp" id="preview-timestamp"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Info Popup Modal -->
+  <div class="modal-overlay" id="info-popup">
+    <div class="modal">
+      <h2>Mention Formats</h2>
+      <div class="modal-content">
+        User mention: &lt;@USER_ID&gt;<br>
+        Nickname mention: &lt;@!USER_ID&gt;<br>
+        Role mention: &lt;@&amp;ROLE_ID&gt;<br>
+        Channel mention: &lt;#CHANNEL_ID&gt;<br>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" id="close-info-btn">Close</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    const addFieldBtn = document.getElementById('add-field-btn');
+    const fieldsContainer = document.getElementById('fields-container');
+    const previewTitle = document.getElementById('preview-title');
+    const previewDescription = document.getElementById('preview-description');
+    const previewFields = document.getElementById('preview-fields');
+    const previewFooter = document.getElementById('preview-footer');
+    const previewTimestamp = document.getElementById('preview-timestamp');
+    const sendAnnouncementBtn = document.getElementById('send-announcement-btn');
+    const successNotification = document.getElementById('success-notification');
+    const errorNotification = document.getElementById('error-notification');
+
+    // Configured Webhook URL through code
+    const webhookUrl = "https://discord.com/api/webhooks/1328454540210602074/yJuHYXq6ySxg9o2HC5zNr1-Z2nOFLYaFnJ6DH5a3QF7dLfikh2gFZItRZwqOA1v6jqNH";
+
+    let fieldCount = 0;
+    const maxFields = 7;
+
+    addFieldBtn.addEventListener('click', () => {
+      if (fieldCount >= maxFields) return;
+      fieldCount++;
+      const fieldDiv = document.createElement('div');
+      fieldDiv.classList.add('field');
+      fieldDiv.innerHTML = `
+        <input type="text" class="field-name" placeholder="Field Name">
+        <input type="text" class="field-value" placeholder="Field Value">
+        <button type="button" class="delete-field-btn" aria-label="Delete Field">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512">
+            <path d="M290.74 93.24l-1.32-3.2C289.9 40.2 249.7 0 192 0s-97.9 40.2-110.42 90.04l-1.32 3.2L64 128h224l-33.26-34.76zM80 464c0 26.51 21.49 48 48 48h96c26.51 0 48-21.49 48-48V160H80v304zm224-240H48v-32c0-17.67 14.33-32 32-32h32v-32c0-17.67 14.33-32 32-32h32c17.67 0 32 14.33 32 32v32h32c17.67 0 32 14.33 32 32v32z"/>
+          </svg>
+          <span class="delete-x">X</span>
+        </button>
+      `;
+      fieldsContainer.appendChild(fieldDiv);
+
+      const fieldNameInput = fieldDiv.querySelector('.field-name');
+      const fieldValueInput = fieldDiv.querySelector('.field-value');
+      const deleteBtn = fieldDiv.querySelector('.delete-field-btn');
+
+      fieldNameInput.addEventListener('input', updatePreview);
+      fieldValueInput.addEventListener('input', updatePreview);
+      deleteBtn.addEventListener('click', () => {
+        fieldsContainer.removeChild(fieldDiv);
+        fieldCount--;
+        updatePreview();
+      });
+    });
+
+    document.getElementById('title').addEventListener('input', updatePreview);
+    document.getElementById('description').addEventListener('input', updatePreview);
+    document.getElementById('footer').addEventListener('input', updatePreview);
+    document.getElementById('timestamp').addEventListener('change', updatePreview);
+
+    function updatePreview() {
+      const title = document.getElementById('title').value || 'Title';
+      const description = document.getElementById('description').value || 'Description';
+      const footer = document.getElementById('footer').value;
+      const timestampChecked = document.getElementById('timestamp').checked;
+
+      previewTitle.textContent = title;
+      previewDescription.textContent = description;
+
+      // Update Fields
+      previewFields.innerHTML = '';
+      const fields = fieldsContainer.querySelectorAll('.field');
+      fields.forEach(field => {
+        const name = field.querySelector('.field-name').value;
+        const value = field.querySelector('.field-value').value;
+        if (name && value) {
+          const fieldItem = document.createElement('div');
+          fieldItem.classList.add('field-item');
+          fieldItem.innerHTML = `<div class="field-name">${name}</div><div class="field-value">${value}</div>`;
+          previewFields.appendChild(fieldItem);
+        }
+      });
+
+      // Update Footer
+      if (footer || timestampChecked) {
+        previewFooter.style.display = 'block';
+        previewFooter.innerHTML = footer || '';
+        if (timestampChecked) {
+          const currentTimestamp = new Date().toLocaleString();
+          previewTimestamp.textContent = currentTimestamp;
+          previewFooter.appendChild(previewTimestamp);
+        } else {
+          previewTimestamp.textContent = '';
+        }
+      } else {
+        previewFooter.style.display = 'none';
+      }
+    }
+
+    sendAnnouncementBtn.addEventListener('click', async () => {
+      successNotification.style.display = 'none';
+      errorNotification.style.display = 'none';
+
+      if (!webhookUrl) {
+        alert('Webhook URL is required.');
+        return;
+      }
+
+      const title = document.getElementById('title').value.trim();
+      if (!title) {
+        alert('Title is required.');
+        return;
+      }
+
+      const description = document.getElementById('description').value.trim();
+      const footer = document.getElementById('footer').value.trim();
+      const timestampChecked = document.getElementById('timestamp').checked;
+
+      const fields = [];
+      const fieldElements = fieldsContainer.querySelectorAll('.field');
+      fieldElements.forEach(field => {
+        const name = field.querySelector('.field-name').value.trim();
+        const value = field.querySelector('.field-value').value.trim();
+        if (name && value) {
+          fields.push({ name, value });
+        }
+      });
+
+      const embed = {
+        author: {
+          name: "Announcement",
+          icon_url: "https://cdn-icons-png.flaticon.com/512/10464/10464718.png"
+        },
+        color: parseInt('b400ff', 16),
+        title: title,
+        description: description || undefined,
+        fields: fields.length > 0 ? fields : undefined,
+        footer: footer || undefined,
+        timestamp: timestampChecked ? new Date().toISOString() : undefined
+      };
+
+      const payload = {
+        embeds: [embed]
+      };
+
+      try {
+        const response = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          successNotification.style.display = 'block';
+        } else {
+          throw new Error('Network response was not ok.');
+        }
+      } catch (error) {
+        errorNotification.style.display = 'block';
+      }
+    });
+
+    // Initialize Preview
+    updatePreview();
+
+    // Info Button Functionality
+    const infoBtn = document.getElementById('info-btn');
+    const infoPopup = document.getElementById('info-popup');
+    const closeInfoBtn = document.getElementById('close-info-btn');
+
+    infoBtn.addEventListener('click', () => {
+      infoPopup.style.display = 'flex';
+    });
+
+    closeInfoBtn.addEventListener('click', () => {
+      infoPopup.style.display = 'none';
+    });
+
+    // Close popup on outside click
+    infoPopup.addEventListener('click', (e) => {
+      if (e.target === infoPopup) {
+        infoPopup.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
